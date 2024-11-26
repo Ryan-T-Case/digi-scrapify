@@ -12,7 +12,13 @@ const scrape = async () => {
       `${DIGIMON_CARD_GAME_CARDLIST_BASE_URL}/?search=true&category=${SetIds.SPECIAL_BOOSTER_VER_2}`,
     );
     const htmlString = await res.text();
-    console.log(load(htmlString).html());
+    const $ = load(htmlString);
+
+    console.log(
+      $(
+        '.cardlistCol > .image_lists > li.image_lists_item.data > .popup > .card_detail .card_name',
+      ).text(),
+    );
   } catch (e) {
     console.log(e);
     throw e;
