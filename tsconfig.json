@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "NodeNext",
     "rootDir": ".",
     "allowJs": true,
     "checkJs": true,
@@ -15,7 +15,8 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "moduleResolution": "nodenext"
   },
   "exclude": ["**/*.js", "**/*.mjs"]
 }
