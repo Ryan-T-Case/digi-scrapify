@@ -2,6 +2,7 @@ import { load } from 'cheerio';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { formatLevel } from './utils/formatters.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -130,7 +131,7 @@ const scrapeSet = async (setId: SetIds) => {
 						id: cardId,
 						name: cardName,
 						type: CardTypes.DIGIMON,
-						level,
+						level: formatLevel(level),
 						playCost: playCost,
 						dp,
 						colors: cardColors,
