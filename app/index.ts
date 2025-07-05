@@ -10,6 +10,9 @@ const DIGIMON_CARD_GAME_CARDLIST_BASE_URL =
 enum SetIds {
 	SPECIAL_BOOSTER_VER_2 = '522025',
 }
+const SetNames = Object.fromEntries(
+	Object.entries(SetIds).map(([key, value]) => [value, key]),
+);
 
 type CardDetails = {
 	id: string;
@@ -21,9 +24,7 @@ const scrapeSet = async (setId: SetIds) => {
 		const res = await fetch(
 			`${DIGIMON_CARD_GAME_CARDLIST_BASE_URL}/?search=true&category=${setId}`,
 		);
-		const SetNames = Object.fromEntries(
-			Object.entries(SetIds).map(([key, value]) => [value, key]),
-		);
+
 		console.log(`Scraping set ${SetNames[setId]}...`);
 
 		const htmlString = await res.text();
