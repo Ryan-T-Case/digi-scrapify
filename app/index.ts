@@ -13,11 +13,51 @@ enum SetIds {
 const SetNames = Object.fromEntries(
 	Object.entries(SetIds).map(([key, value]) => [value, key]),
 );
+enum CardTypes {
+	DIGI_EGG = 'Digi-Egg',
+	DIGIMON = 'Digimon',
+	TAMER = 'Tamer',
+	OPTION = 'Option',
+}
+type CardColors =
+	| 'Red'
+	| 'Blue'
+	| 'Yellow'
+	| 'Green'
+	| 'Black'
+	| 'Purple'
+	| 'White';
 
-type CardDetails = {
+interface BaseCard {
 	id: string;
 	name: string;
-};
+	colors: CardColors[];
+	isAlternateArt?: boolean;
+}
+
+interface DigiEggCard extends BaseCard {
+	type: CardTypes.DIGI_EGG;
+	level: '2';
+}
+
+interface DigimonCard extends BaseCard {
+	type: CardTypes.DIGIMON;
+	level: string;
+	playCost: string;
+	dp: string;
+}
+
+interface TamerCard extends BaseCard {
+	type: CardTypes.TAMER;
+	playCost: string;
+}
+
+interface OptionCard extends BaseCard {
+	type: CardTypes.OPTION;
+	useCost: string;
+}
+
+type Card = DigiEggCard | DigimonCard | TamerCard | OptionCard;
 
 const scrapeSet = async (setId: SetIds) => {
 	try {
@@ -33,18 +73,92 @@ const scrapeSet = async (setId: SetIds) => {
 		const cardListItems = $(
 			'.cardlistCol > .image_lists > li.image_lists_item.data > .popup > .card_detail',
 		);
-		const results: CardDetails[] = [];
+		const results: Card[] = [];
 
 		cardListItems.each((_, item) => {
 			const cardId = $(item).find('.cardno').text().trim();
 			const cardName = $(item).find('.card_name').text().trim();
+			const cardType = $(item).find('.cardtype').first().text().trim();
+			const cardColors = $(item)
+				.find('.cardColor')
+				.children()
+				.map((_, color) => {
+					return $(color).text().trim() as CardColors;
+				})
+				.get();
+			const isAlternateArt = $(item).find('.cardParallel').length > 0;
 
-			results.push({
-				id: cardId,
-				name: cardName,
-			});
+			switch (cardType) {
+				case CardTypes.DIGI_EGG:
+					results.push({
+						id: cardId,
+						name: cardName,
+						type: CardTypes.DIGI_EGG,
+						level: '2',
+						colors: cardColors,
+						isAlternateArt,
+					});
+					break;
+				case CardTypes.DIGIMON:
+					const level = $(item).find('.cardlv').text().trim();
+					const digimonPlayCost = $(item)
+						.find('dt')
+						.filter((_, el) => $(el).text().trim() === 'Play Cost')
+						.next('dd')
+						.text()
+						.trim();
+					const dp = $(item).find('.cardinfo_dp > dd').text().trim();
+					results.push({
+						id: cardId,
+						name: cardName,
+						type: CardTypes.DIGIMON,
+						level,
+						playCost: digimonPlayCost,
+						dp,
+						colors: cardColors,
+						isAlternateArt,
+					});
+					break;
+				case CardTypes.TAMER:
+					const tamerPlayCost = $(item)
+						.find('dt')
+						.filter((_, el) => $(el).text().trim() === 'Play Cost')
+						.next('dd')
+						.text()
+						.trim();
+					results.push({
+						id: cardId,
+						name: cardName,
+						type: CardTypes.TAMER,
+						playCost: tamerPlayCost,
+						colors: cardColors,
+						isAlternateArt,
+					});
+					break;
+				case CardTypes.OPTION:
+					const useCost = $(item)
+						.find('dt')
+						.filter((_, el) => $(el).text().trim() === 'Play Cost')
+						.next('dd')
+						.text()
+						.trim();
+					results.push({
+						id: cardId,
+						name: cardName,
+						type: CardTypes.OPTION,
+						useCost,
+						colors: cardColors,
+						isAlternateArt,
+					});
+					break;
+				default:
+					console.warn(
+						`Unknown card type: ${cardType} for card ${cardName} (${cardId})`,
+					);
+					break;
+			}
 		});
-
+		console.log(`Scraped ${results.length} cards from set ${SetNames[setId]}.`);
 		return results;
 	} catch (e) {
 		console.log(e);
@@ -53,7 +167,7 @@ const scrapeSet = async (setId: SetIds) => {
 };
 
 const scrapeAllSets = async () => {
-	const allResults: Record<string, CardDetails[]> = {};
+	const allResults: Record<string, Card[]> = {};
 
 	for (const [setName, setId] of Object.entries(SetIds)) {
 		allResults[setName] = await scrapeSet(setId);
