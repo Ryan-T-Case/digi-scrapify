@@ -28,6 +28,16 @@ type CardColors =
 	| 'Purple'
 	| 'White';
 
+const allowedCardColors: CardColors[] = [
+	'Red',
+	'Blue',
+	'Yellow',
+	'Green',
+	'Black',
+	'Purple',
+	'White',
+];
+
 interface BaseCard {
 	id: string;
 	name: string;
@@ -83,9 +93,17 @@ const scrapeSet = async (setId: SetIds) => {
 				.find('.cardColor')
 				.children()
 				.map((_, color) => {
-					return $(color).text().trim() as CardColors;
+					const colorText = $(color).text().trim();
+					if (!allowedCardColors.includes(colorText as CardColors)) {
+						console.warn(
+							`Unknown card color: ${colorText} for card ${cardName} (${cardId})`,
+						);
+						return null;
+					}
+					return colorText;
 				})
-				.get();
+				.get()
+				.filter((c): c is CardColors => c !== null);
 			const isAlternateArt = $(item).find('.cardParallel').length > 0;
 			const playCost = $(item)
 				.find('dt')
