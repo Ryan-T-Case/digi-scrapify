@@ -87,6 +87,12 @@ const scrapeSet = async (setId: SetIds) => {
 				})
 				.get();
 			const isAlternateArt = $(item).find('.cardParallel').length > 0;
+			const playCost = $(item)
+				.find('dt')
+				.filter((_, el) => $(el).text().trim() === 'Play Cost')
+				.next('dd')
+				.text()
+				.trim();
 
 			switch (cardType) {
 				case CardTypes.DIGI_EGG:
@@ -101,52 +107,34 @@ const scrapeSet = async (setId: SetIds) => {
 					break;
 				case CardTypes.DIGIMON:
 					const level = $(item).find('.cardlv').text().trim();
-					const digimonPlayCost = $(item)
-						.find('dt')
-						.filter((_, el) => $(el).text().trim() === 'Play Cost')
-						.next('dd')
-						.text()
-						.trim();
 					const dp = $(item).find('.cardinfo_dp > dd').text().trim();
 					results.push({
 						id: cardId,
 						name: cardName,
 						type: CardTypes.DIGIMON,
 						level,
-						playCost: digimonPlayCost,
+						playCost: playCost,
 						dp,
 						colors: cardColors,
 						isAlternateArt,
 					});
 					break;
 				case CardTypes.TAMER:
-					const tamerPlayCost = $(item)
-						.find('dt')
-						.filter((_, el) => $(el).text().trim() === 'Play Cost')
-						.next('dd')
-						.text()
-						.trim();
 					results.push({
 						id: cardId,
 						name: cardName,
 						type: CardTypes.TAMER,
-						playCost: tamerPlayCost,
+						playCost: playCost,
 						colors: cardColors,
 						isAlternateArt,
 					});
 					break;
 				case CardTypes.OPTION:
-					const useCost = $(item)
-						.find('dt')
-						.filter((_, el) => $(el).text().trim() === 'Play Cost')
-						.next('dd')
-						.text()
-						.trim();
 					results.push({
 						id: cardId,
 						name: cardName,
 						type: CardTypes.OPTION,
-						useCost,
+						useCost: playCost,
 						colors: cardColors,
 						isAlternateArt,
 					});
